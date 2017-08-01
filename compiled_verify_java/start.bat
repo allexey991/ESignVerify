@@ -1,0 +1,1 @@
+java -jar verify.jar 123 MC0CFCBdfucJYMJPFAuYV47R/Dwh6LjWAhUAlumKS/UTreOuZ/aTL+Cx4GkgJ44= C:/Users/allexey991/Desktop/SignForm-master/HTML5/data/ceert.pem
