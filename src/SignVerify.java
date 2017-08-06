@@ -18,35 +18,40 @@ import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
 
-import Decoder.BASE64Encoder;
+//import Decoder.BASE64Encoder;
 
 
 public class SignVerify {
 	private Signature _sign;
-	private static String error = "";
+	private String _error = "";
 	private byte[] _msgSign;
+	private boolean _debugMode = false;
 	//initialization parameters
-	public static SignVerify init(String Mes, String Sign, String PublicKeyPath){
-		SignVerify verify = new SignVerify();
+	public void init(String Mes, String Sign, String PublicKeyPath,boolean mode){
+		//SignVerify verify = new SignVerify();
+		setDebugMode(mode);
 		try{
-			verify._sign = Signature.getInstance("SHA1withDSA");
-			PublicKey publicKey = SignVerify.getPublic(PublicKeyPath);
-			verify._sign.initVerify(publicKey);
-			verify._sign.update(Mes.getBytes());
+			_sign = Signature.getInstance("SHA1withDSA");
+			PublicKey publicKey = getPublic(PublicKeyPath);
+			if (publicKey == null)
+				return;
+			_sign.initVerify(publicKey);
+			_sign.update(Mes.getBytes());
+			if(_debugMode)
 			System.out.println("Generating public key from file: OK");
 			
 			Base64.Decoder decoder = Base64.getDecoder();
-			verify._msgSign = decoder.decode(Sign);
-			
+			_msgSign = decoder.decode(Sign);
+			if(_debugMode)
 			System.out.println("Key initialization: OK"); 
-			return verify;
+			
 		}catch (Exception e){
-			if (verify.error == "")
-				error = "Wrong public key format!";
+			_error = "Wrong public key format!";
+			
 		}
 
 		
-		return verify;
+		
 	}
 	//verify sign
 	public boolean Verify() {
@@ -55,34 +60,38 @@ public class SignVerify {
 			isValid = _sign.verify(_msgSign);
 			return isValid;
 		}catch (Exception e){
-			if (error == "")
-				error = "Invalid encoding for signature!";
+			_error = "Invalid encoding for signature!";
 		}
 		return false;
 	}
 	//get public key from file
-	public static PublicKey getPublic(String filename) throws Exception {
+	public PublicKey getPublic(String filename) throws Exception {
 		CertificateFactory fact = CertificateFactory.getInstance("X.509");
 		try {
 	    	FileInputStream is = new FileInputStream (filename);
 	    	try {
-	    	System.out.println("File reading: OK");
-	    	X509Certificate cer = (X509Certificate) fact.generateCertificate(is);
-	    	PublicKey key = cer.getPublicKey();
-		    return key;
+		    	if(_debugMode)
+		    	System.out.println("File reading: OK");
+		    	X509Certificate cer = (X509Certificate) fact.generateCertificate(is);
+		    	PublicKey key = cer.getPublicKey();
+			    return key;
 	    	}catch (Exception e){
-	    		if (error == "")
-	    			error = "Wrong structure, ñouldn't parse certificate";
+	    		_error = "Wrong structure, couldn't parse certificate";
 	    	}
 	    }catch (Exception e){
-	    	if (error == ""){
-	    		error = "File Not Found!";}
+	    	_error = "File Not Found!";
 	    }                                                                                                                                                                                                                                                        
 	    return null;
 		
 	}
-	public void getLastError() {
-		System.out.println(error);
+	public String getLastError() {
+		return _error;
+	}
+	public void setDebugMode(boolean mode) {
+		_debugMode = mode;
+	}
+	public boolean getDebugMode() {
+		return _debugMode;
 	}
 	 
 	
